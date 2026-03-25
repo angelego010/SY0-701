@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N10-009 Gap Drill — Grid Build Study Lab</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Outfit:wght@300;400;600;700;800&display=swap');
+
+:root {
+  --bg: #0a0612;
+  --bg2: #110d1e;
+  --panel: #15102a;
+  --panel2: #1a1335;
+  --border: #2a1f4a;
+  --border2: #3d2d6b;
+  --accent: #e8622a;
+  --accent-dim: #7a3218;
+  --accent-glow: rgba(232,98,42,0.3);
+  --purple: #7c5cbf;
+  --purple-dim: #3d2d6b;
+  --purple-glow: rgba(124,92,191,0.25);
+  --green: #2ecc71;
+  --green-dim: rgba(46,204,113,0.15);
+  --red: #e74c3c;
+  --red-dim: rgba(231,76,60,0.15);
+  --yellow: #f39c12;
+  --text: #d4cce8;
+  --text-dim: #7a6f9a;
+  --text-bright: #f0ecf8;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Outfit', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 15% 10%, rgba(124,92,191,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 90%, rgba(232,98,42,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(10,6,18,0.5) 0%, transparent 80%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 1.5rem; }
+
+/* ─── LOGIN SCREEN ─── */
+.login-screen {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 90vh; gap: 2rem; text-align: center;
+}
+.login-screen h1 {
+  font-family: var(--mono); font-size: 1.6rem; color: var(--accent);
+  letter-spacing: 0.15em; text-transform: uppercase;
+  text-shadow: 0 0 30px var(--accent-glow);
+}
+.login-screen .subtitle {
+  font-size: 0.85rem; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase;
+}
+.login-screen .profile-btns { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+.profile-btn {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  padding: 2rem 3rem; cursor: pointer; transition: all 0.3s;
+  display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+}
+.profile-btn:hover {
+  border-color: var(--accent); background: var(--panel2);
+  box-shadow: 0 0 25px var(--accent-glow); transform: translateY(-3px);
+}
+.profile-btn .name { font-weight: 700; font-size: 1.3rem; color: var(--text-bright); }
+.profile-btn .score { font-family: var(--mono); font-size: 0.8rem; color: var(--text-dim); }
+
+/* ─── HEADER ─── */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 0; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem;
+}
+.header-left { display: flex; align-items: center; gap: 1rem; }
+.header h2 { font-family: var(--mono); font-size: 1rem; color: var(--accent); letter-spacing: 0.1em; }
+.header .user-badge {
+  font-size: 0.75rem; color: var(--purple); background: var(--purple-dim);
+  padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 600;
+}
+.header-btns { display: flex; gap: 0.5rem; }
+.btn-sm {
+  font-family: var(--mono); font-size: 0.7rem; padding: 0.4rem 0.8rem;
+  background: var(--panel); border: 1px solid var(--border); color: var(--text-dim);
+  border-radius: 6px; cursor: pointer; transition: all 0.2s;
+}
+.btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ─── DOMAIN DASHBOARD ─── */
+.dashboard { margin-bottom: 2rem; }
+.dashboard h3 {
+  font-family: var(--mono); font-size: 0.75rem; color: var(--text-dim);
+  letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1rem;
+}
+.domain-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.75rem; }
+.domain-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+  padding: 1rem; cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden;
+}
+.domain-card:hover { border-color: var(--purple); transform: translateY(-2px); }
+.domain-card.active { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+.domain-card .domain-num {
+  font-family: var(--mono); font-size: 0.65rem; color: var(--text-dim); margin-bottom: 0.3rem;
+}
+.domain-card .domain-name { font-weight: 600; font-size: 0.85rem; color: var(--text-bright); margin-bottom: 0.6rem; }
+.domain-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-bottom: 0.3rem; }
+.domain-bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s; }
+.domain-card .domain-stats {
+  font-family: var(--mono); font-size: 0.65rem; color: var(--text-dim);
+}
+
+/* ─── MODE SELECT ─── */
+.mode-bar { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.mode-btn {
+  font-family: var(--mono); font-size: 0.7rem; padding: 0.5rem 1rem;
+  background: var(--panel); border: 1px solid var(--border); color: var(--text-dim);
+  border-radius: 6px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em;
+}
+.mode-btn:hover { border-color: var(--purple); color: var(--purple); }
+.mode-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+/* ─── QUIZ AREA ─── */
+.quiz-area { display: none; }
+.quiz-area.visible { display: block; }
+.q-counter {
+  font-family: var(--mono); font-size: 0.7rem; color: var(--text-dim);
+  margin-bottom: 0.75rem; letter-spacing: 0.1em;
+}
+.q-objective {
+  font-family: var(--mono); font-size: 0.65rem; color: var(--purple);
+  background: var(--purple-dim); display: inline-block;
+  padding: 0.2rem 0.6rem; border-radius: 4px; margin-bottom: 1rem;
+}
+.q-text {
+  font-size: 1.05rem; line-height: 1.6; color: var(--text-bright);
+  margin-bottom: 1.5rem; font-weight: 400;
+}
+.q-choices { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.5rem; }
+.choice-btn {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+  padding: 0.85rem 1.1rem; cursor: pointer; transition: all 0.2s;
+  font-size: 0.9rem; color: var(--text); text-align: left; font-family: var(--sans);
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.choice-btn .letter {
+  font-family: var(--mono); font-weight: 700; font-size: 0.75rem;
+  color: var(--text-dim); min-width: 1.5rem;
+}
+.choice-btn:hover { border-color: var(--purple); background: var(--panel2); }
+.choice-btn.selected { border-color: var(--accent); background: rgba(232,98,42,0.1); }
+.choice-btn.correct { border-color: var(--green); background: var(--green-dim); }
+.choice-btn.incorrect { border-color: var(--red); background: var(--red-dim); }
+.choice-btn.show-correct { border-color: var(--green); background: var(--green-dim); }
+.choice-btn.disabled { pointer-events: none; }
+
+.feedback-box {
+  background: var(--panel2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 1.25rem; margin-bottom: 1.5rem; display: none;
+}
+.feedback-box.visible { display: block; }
+.feedback-box .fb-status {
+  font-family: var(--mono); font-size: 0.8rem; font-weight: 700;
+  margin-bottom: 0.5rem; letter-spacing: 0.05em;
+}
+.feedback-box .fb-status.correct { color: var(--green); }
+.feedback-box .fb-status.incorrect { color: var(--red); }
+.feedback-box .fb-explain { font-size: 0.85rem; line-height: 1.6; color: var(--text); }
+
+.next-btn {
+  font-family: var(--mono); font-size: 0.8rem; padding: 0.65rem 2rem;
+  background: var(--accent); border: none; color: #fff; border-radius: 8px;
+  cursor: pointer; font-weight: 600; letter-spacing: 0.05em;
+  transition: all 0.2s; display: none;
+}
+.next-btn.visible { display: inline-block; }
+.next-btn:hover { background: #d45520; transform: translateY(-1px); box-shadow: 0 4px 15px var(--accent-glow); }
+
+/* ─── SESSION SUMMARY ─── */
+.summary { display: none; }
+.summary.visible { display: block; }
+.summary h3 { font-family: var(--mono); font-size: 1.1rem; color: var(--accent); margin-bottom: 1rem; }
+.summary-stats {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-bottom: 1.5rem;
+}
+.stat-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+  padding: 1rem; text-align: center;
+}
+.stat-card .stat-val { font-family: var(--mono); font-size: 1.8rem; font-weight: 700; }
+.stat-card .stat-label { font-size: 0.7rem; color: var(--text-dim); margin-top: 0.3rem; }
+.summary-domains { margin-bottom: 1.5rem; }
+.summary-domain-row {
+  display: flex; align-items: center; gap: 1rem; padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.summary-domain-row .sd-name { flex: 1; font-size: 0.85rem; }
+.summary-domain-row .sd-score { font-family: var(--mono); font-size: 0.85rem; font-weight: 600; }
+
+.restart-btn {
+  font-family: var(--mono); font-size: 0.8rem; padding: 0.65rem 2rem;
+  background: var(--purple); border: none; color: #fff; border-radius: 8px;
+  cursor: pointer; font-weight: 600; transition: all 0.2s;
+}
+.restart-btn:hover { background: #6b4eaa; }
+
+@media (max-width: 600px) {
+  .domain-grid { grid-template-columns: 1fr 1fr; }
+  .summary-stats { grid-template-columns: 1fr; }
+  .profile-btn { padding: 1.5rem 2rem; }
+}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// N10-009 GAP DRILL — QUESTION DATABASE
+// Tailored from Michael & Gabe's Canvas quiz misses
+// ══════════════════════════════════════════════════════════════
+
+const DOMAINS = {
+  "1.0": { name: "Networking Concepts", weight: 23 },
+  "2.0": { name: "Network Implementation", weight: 20 },
+  "3.0": { name: "Network Operations", weight: 19 },
+  "4.0": { name: "Network Security", weight: 19 },
+  "5.0": { name: "Network Troubleshooting", weight: 19 }
+};
+
+// weakFor: 'M' = Michael, 'G' = Gabe, 'B' = both
+const QUESTIONS = [
+  // ── DOMAIN 1.0: NETWORKING CONCEPTS ──
+  {id:1, domain:"1.0", obj:"1.8", weakFor:"B",
+   q:"A server needs a consistent IP from DHCP without using a static assignment. What should the admin configure?",
+   choices:["A DHCP reservation based on the server's MAC address","A separate /32 scope for the server","A static IP within the DHCP range","SLAAC for the server"],
+   answer:0,
+   explain:"A DHCP reservation ties a specific IP to a MAC address, so the server always gets the same IP dynamically. This avoids conflicts that can happen with manual static IPs inside a DHCP range."},
+  {id:2, domain:"1.0", obj:"1.8", weakFor:"B",
+   q:"A single user cannot reach a website by URL, but other users can access it fine. What is the most likely local cause?",
+   choices:["The hosts file on that user's machine","A bad nameserver record","A self-signed certificate","An IP helper misconfiguration"],
+   answer:0,
+   explain:"The local hosts file can override DNS resolution for a specific machine. If it has a stale or wrong entry for that domain, only that user is affected. Other DNS-level issues would affect all users."},
+  {id:3, domain:"1.0", obj:"1.8", weakFor:"B",
+   q:"A company wants newapp.example.com to always resolve to the same address as www.example.com. Which DNS record type should they create?",
+   choices:["CNAME","NS","MX","SOA"],
+   answer:0,
+   explain:"CNAME (Canonical Name) creates an alias that points one hostname to another. It ensures newapp.example.com always resolves to whatever IP www.example.com points to, staying in sync automatically."},
+  {id:4, domain:"1.0", obj:"1.8", weakFor:"B",
+   q:"After migrating to a new mail server and updating the MX record, users still can't receive email. The A record is correct. What should the engineer have done beforehand?",
+   choices:["Reduced the TTL before the MX record change","Changed the email client configuration","Performed a DNS zone transfer","Updated the NS record"],
+   answer:0,
+   explain:"High TTL values mean DNS resolvers worldwide cache the old record for a long time. Lowering the TTL well before the change ensures the new record propagates quickly when you make the switch."},
+  {id:5, domain:"1.0", obj:"1.8", weakFor:"B",
+   q:"An organization moved its DNS servers to new IPs. Customers can no longer reach the website. Which DNS records need updating at the registrar?",
+   choices:["NS records","A records","CNAME records","MX records"],
+   answer:0,
+   explain:"NS (Name Server) records at the registrar tell the internet which DNS servers are authoritative for your domain. When you move DNS servers, you must update these NS records so queries go to the right place."},
+  {id:6, domain:"1.0", obj:"1.8", weakFor:"B",
+   q:"An admin needs to change where outside DNS records are hosted. Which record should be changed at the registrar?",
+   choices:["NS","SOA","PTR","CNAME"],
+   answer:0,
+   explain:"NS records at the registrar delegate DNS authority. Changing where DNS is hosted means pointing NS records to the new DNS provider's nameservers."},
+  {id:7, domain:"1.0", obj:"1.6", weakFor:"B",
+   q:"Which internal routing protocol is best characterized as having fast convergence and being loop-free?",
+   choices:["OSPF","STP","BGP","RIP"],
+   answer:0,
+   explain:"OSPF uses Dijkstra's SPF algorithm which inherently prevents loops and converges quickly when topology changes. STP prevents Layer 2 loops but isn't a routing protocol. BGP is an exterior gateway protocol, not internal."},
+  {id:8, domain:"1.0", obj:"1.6", weakFor:"B",
+   q:"Which routing protocol uses the concepts of a successor and a feasible successor?",
+   choices:["EIGRP","OSPF","BGP","RIP"],
+   answer:0,
+   explain:"EIGRP maintains a topology table with successor (best path) and feasible successor (backup path that's loop-free). This allows near-instant failover without full recalculation. No other protocol uses this terminology."},
+  {id:9, domain:"1.0", obj:"1.6", weakFor:"G",
+   q:"Which of the following does OSPF use to communicate routing updates?",
+   choices:["Multicast","Broadcast","Unicast","Anycast"],
+   answer:0,
+   explain:"OSPF uses multicast addresses 224.0.0.5 (all OSPF routers) and 224.0.0.6 (DR/BDR) to send LSAs. This is more efficient than broadcast because only OSPF routers process the packets."},
+  {id:10, domain:"1.0", obj:"1.6", weakFor:"G",
+   q:"Which routing technology uses unequal-cost load balancing and port 88?",
+   choices:["EIGRP","OSPF","BGP","RIP"],
+   answer:0,
+   explain:"EIGRP is the only common routing protocol that supports unequal-cost load balancing through its variance command. It uses IP protocol 88 (not a TCP/UDP port — it runs directly over IP)."},
+  {id:11, domain:"1.0", obj:"1.3", weakFor:"B",
+   q:"Which cloud deployment model is most commonly associated with multitenancy and is generally offered by a service provider?",
+   choices:["Public","Private","Community","Hybrid"],
+   answer:0,
+   explain:"Public cloud is inherently multitenant — the provider shares infrastructure across many customers. Private cloud is single-tenant. Hybrid combines both but isn't defined by multitenancy."},
+  {id:12, domain:"1.0", obj:"1.3", weakFor:"M",
+   q:"Which technology is used to stage copies of a website closer to geographically dispersed users?",
+   choices:["CDN","SDN","VPN","SAN"],
+   answer:0,
+   explain:"A Content Delivery Network caches copies of web content at edge servers around the world, reducing latency for users by serving content from a nearby location."},
+  {id:13, domain:"1.0", obj:"1.3", weakFor:"G",
+   q:"Which is most closely associated with a dedicated link to a cloud environment that may not include encryption?",
+   choices:["Direct Connect","Captive portal","Internet gateway","VPN"],
+   answer:0,
+   explain:"Direct Connect (AWS) or ExpressRoute (Azure) provides a dedicated private link to the cloud, bypassing the public internet. It doesn't inherently include encryption — that's a separate layer. VPNs provide encryption but use the public internet."},
+  {id:14, domain:"1.0", obj:"1.7", weakFor:"B",
+   q:"In a high-density wireless environment with device saturation concerns, which 802.11 standard is best suited?",
+   choices:["802.11ax (Wi-Fi 6)","802.11ac","802.11n","802.11g"],
+   answer:0,
+   explain:"802.11ax (Wi-Fi 6) introduced OFDMA and BSS Coloring specifically to handle high-density environments with many devices. OFDMA allows simultaneous transmission to multiple clients, reducing congestion."},
+  {id:15, domain:"1.0", obj:"1.7", weakFor:"G",
+   q:"A consultant is deploying many WAPs and wants centralized control from one wireless LAN controller. Which network type should they use?",
+   choices:["Infrastructure","Mesh","Ad Hoc","Point-to-point"],
+   answer:0,
+   explain:"Infrastructure mode uses a centralized controller to manage all access points. Mesh is for distributed self-healing networks. Ad hoc is peer-to-peer without infrastructure."},
+  {id:16, domain:"1.0", obj:"1.4", weakFor:"B",
+   q:"A router interface is 10.0.0.95/28. Which of the following is true about this interface?",
+   choices:["10.0.0.95 is the broadcast address for its subnet","The router can reach 10.0.0.81","The subnet starts at 10.0.0.64","Both B and C"],
+   answer:0,
+   explain:"/28 = 16 IPs per subnet. 10.0.0.80-95 is a subnet, with .80 as network and .95 as broadcast. The router interface IS the broadcast address, which means it can't route properly — it's misconfigured."},
+  {id:17, domain:"1.0", obj:"1.4", weakFor:"B",
+   q:"An admin needs to connect two routers in a point-to-point link and conserve IP space. Which subnet should they use?",
+   choices:["/30","/24","/26","/28"],
+   answer:0,
+   explain:"/30 gives exactly 4 IPs: network, two usable hosts (one per router), and broadcast. It's the most efficient choice for a point-to-point link. /31 is also valid per RFC 3021 but isn't always an answer choice."},
+  {id:18, domain:"1.0", obj:"1.4", weakFor:"B",
+   q:"A router has 10.61.52.34 with mask 255.255.255.252. What best describes this interface?",
+   choices:["A point-to-point connection","A connection to the internet","A virtual address for redundancy","Out-of-band management"],
+   answer:0,
+   explain:"255.255.255.252 = /30, which provides only 2 usable IPs. This is the standard subnet size for a point-to-point link between two routers."},
+  {id:19, domain:"1.0", obj:"1.4", weakFor:"G",
+   q:"Which best describes what an organization would use port address translation for?",
+   choices:["Non-routable addresses on the perimeter router","VLANs on the perimeter","A public address on the perimeter router","Servers on the perimeter"],
+   answer:0,
+   explain:"PAT (a form of NAT) translates many private/non-routable internal addresses to a single public IP, differentiating sessions by port numbers. This is how most organizations share one public IP among many internal devices."},
+  {id:20, domain:"1.0", obj:"1.5", weakFor:"G",
+   q:"Which network topology contains a direct connection between every node?",
+   choices:["Full mesh","Hub-and-spoke","Star","Point-to-point"],
+   answer:0,
+   explain:"In a full mesh topology, every node is directly connected to every other node. This provides maximum redundancy but is expensive and complex to scale (n*(n-1)/2 links)."},
+  {id:21, domain:"1.0", obj:"1.5", weakFor:"G",
+   q:"Which topology involves sending all traffic through a single central point?",
+   choices:["Hub-and-spoke","Mesh","Hybrid","Point-to-point"],
+   answer:0,
+   explain:"Hub-and-spoke (also called star) routes all traffic through a central hub. If the hub fails, all spokes lose connectivity. This is common in WAN designs with a central office."},
+  {id:22, domain:"1.0", obj:"1.1", weakFor:"B",
+   q:"Which OSI layer is responsible for end-to-end encryption and data format translation (like JPEG, ASCII, TLS)?",
+   choices:["Presentation (Layer 6)","Session (Layer 5)","Application (Layer 7)","Transport (Layer 4)"],
+   answer:0,
+   explain:"The Presentation layer handles data format translation, encryption/decryption, and compression. TLS encryption and format conversions (JPEG, ASCII, EBCDIC) happen here."},
+
+  // ── DOMAIN 2.0: NETWORK IMPLEMENTATION ──
+  {id:23, domain:"2.0", obj:"2.1", weakFor:"B",
+   q:"Which device is specifically designed to distribute incoming traffic across multiple web servers based on load?",
+   choices:["Load balancer","Router","Firewall","Switch"],
+   answer:0,
+   explain:"A load balancer distributes client requests across multiple servers to prevent any single server from being overwhelmed. Routers make forwarding decisions based on IP, not server load."},
+  {id:24, domain:"2.0", obj:"2.1", weakFor:"M",
+   q:"Which appliance extends a WLAN's footprint for multiple device connections within a designated area?",
+   choices:["Access point","Router","Switch","Firewall"],
+   answer:0,
+   explain:"An access point (AP) provides wireless connectivity within a coverage area. Routers route between networks. A wireless AP specifically extends WLAN reach for multiple simultaneous clients."},
+  {id:25, domain:"2.0", obj:"2.3", weakFor:"B",
+   q:"An IT manager needs to connect 10 sites in a mesh with security and fast provisioning. Which technology fits best?",
+   choices:["SD-WAN","NFV","VPN","VXLAN"],
+   answer:0,
+   explain:"SD-WAN provides centralized control, automatic encrypted tunnels between sites, fast provisioning of new locations, and intelligent traffic routing. NFV virtualizes network functions but doesn't solve multi-site connectivity."},
+  {id:26, domain:"2.0", obj:"2.4", weakFor:"B",
+   q:"Which IPsec component encrypts the entire data payload including the original IP header in tunnel mode?",
+   choices:["ESP","AH","GRE","IKE"],
+   answer:0,
+   explain:"ESP (Encapsulating Security Payload) provides encryption and optional authentication. In tunnel mode, it encrypts the entire original packet. AH only authenticates, it doesn't encrypt. IKE negotiates the security association."},
+  {id:27, domain:"2.0", obj:"2.4", weakFor:"B",
+   q:"Which is the most secure way to provide site-to-site connectivity?",
+   choices:["IPSec","IKE","GRE","VXLAN"],
+   answer:0,
+   explain:"IPSec provides both encryption and authentication for site-to-site links. IKE is part of IPSec (key exchange), not a standalone connectivity solution. GRE provides tunneling but no encryption by itself."},
+  {id:28, domain:"2.0", obj:"2.4", weakFor:"G",
+   q:"What does a full-tunnel VPN provide that a split-tunnel does not?",
+   choices:["Corporate inspection of all network traffic","Lower bandwidth requirements","Access to blocked sites","The ability to reset passwords"],
+   answer:0,
+   explain:"Full-tunnel routes ALL traffic (including internet) through the corporate VPN gateway, allowing the company to inspect and filter everything. Split-tunnel only routes corporate-bound traffic through the VPN."},
+  {id:29, domain:"2.0", obj:"2.2", weakFor:"G",
+   q:"A fiber patch panel uses which connector type in the MDF?",
+   choices:["SC","F-type","RJ11","BNC"],
+   answer:0,
+   explain:"SC (Subscriber Connector) is the standard fiber connector for patch panels in distribution frames. F-type is coaxial, RJ11 is telephone, BNC is older coax/test equipment."},
+  {id:30, domain:"2.0", obj:"2.2", weakFor:"G",
+   q:"Which fiber connector type is most commonly used on a NIC (network interface card)?",
+   choices:["LC","SC","ST","MPO"],
+   answer:0,
+   explain:"LC (Lucent Connector) is the standard small form-factor connector used on SFP/SFP+ modules that plug into NICs and switches. SC is larger and used more on patch panels."},
+  {id:31, domain:"2.0", obj:"2.2", weakFor:"G",
+   q:"Which connector provides console access to a switch?",
+   choices:["RJ45","ST","BNC","SFP"],
+   answer:0,
+   explain:"Console access to a switch uses an RJ45 port (often labeled 'Console') with a rollover cable. Some newer switches use USB Type-B or USB-C instead."},
+  {id:32, domain:"2.0", obj:"2.2", weakFor:"G",
+   q:"A facility has 2.5Gbps fiber from the ISP but only uses 1Gbps. What should be configured to use the full ISP speed?",
+   choices:["Link aggregation","Port duplex","802.1Q tagging","Network address translation"],
+   answer:0,
+   explain:"If the NIC/switch ports are 1Gbps, you can bond multiple links using LACP (link aggregation) to exceed 1Gbps throughput. Alternatively, upgrade to 2.5GbE hardware."},
+  {id:33, domain:"2.0", obj:"2.1", weakFor:"G",
+   q:"Which device can support jumbo frames?",
+   choices:["Switch","Bridge","Hub","Access point"],
+   answer:0,
+   explain:"Managed switches support jumbo frames (MTU > 1500, typically 9000 bytes) for reducing overhead in high-throughput environments like storage networks."},
+  {id:34, domain:"2.0", obj:"2.1", weakFor:"G",
+   q:"A router only has one LAN port but needs to route between multiple VLANs. What does this most likely require?",
+   choices:["Subinterfaces (router-on-a-stick)","A hub utilizing jumbo frames","A firewall performing deep packet inspection","A switch using STP"],
+   answer:0,
+   explain:"Router-on-a-stick uses subinterfaces on a single physical port, each assigned to a VLAN. The trunk link to the switch carries tagged traffic for all VLANs over one cable."},
+
+  // ── DOMAIN 3.0: NETWORK OPERATIONS ──
+  {id:35, domain:"3.0", obj:"3.3", weakFor:"B",
+   q:"Which metric describes the average duration of an outage — how long it takes to repair/restore service?",
+   choices:["MTTR","RPO","RTO","MTBF"],
+   answer:0,
+   explain:"MTTR = Mean Time To Repair. It measures the average time to fix a failure and restore service. RPO = acceptable data loss. RTO = maximum acceptable downtime. MTBF = average time between failures."},
+  {id:36, domain:"3.0", obj:"3.3", weakFor:"B",
+   q:"Which disaster recovery metric describes the amount of data that could be lost since the last backup?",
+   choices:["RPO","RTO","MTTR","MTBF"],
+   answer:0,
+   explain:"RPO (Recovery Point Objective) defines the maximum acceptable data loss measured in time. If RPO is 4 hours, you need backups at least every 4 hours."},
+  {id:37, domain:"3.0", obj:"3.3", weakFor:"B",
+   q:"Which metric estimates the average lifespan of a device before failure?",
+   choices:["MTBF","RPO","RTO","MTTR"],
+   answer:0,
+   explain:"MTBF (Mean Time Between Failures) predicts how long a device typically operates before experiencing a failure. Higher MTBF = more reliable hardware."},
+  {id:38, domain:"3.0", obj:"3.3", weakFor:"B",
+   q:"A rack has dual-PSU servers but only one PDU. Why add a second PDU?",
+   choices:["Power redundancy","Surge protection","Electricity conservation","Load monitoring"],
+   answer:0,
+   explain:"Dual power supplies only help if they're on separate PDUs (and ideally separate circuits). If the single PDU fails, all equipment loses power regardless of having dual PSUs."},
+  {id:39, domain:"3.0", obj:"3.3", weakFor:"M",
+   q:"Which activity brings groups from different departments together to evaluate the disaster recovery process through discussion?",
+   choices:["Tabletop exercises","Validation test","SLA alignment","Active-active approach"],
+   answer:0,
+   explain:"Tabletop exercises are discussion-based simulations where teams walk through a disaster scenario without actually disrupting systems. They test communication and decision-making across departments."},
+  {id:40, domain:"3.0", obj:"3.3", weakFor:"G",
+   q:"For non-critical applications that can tolerate a short period of downtime, which DR site type is most appropriate?",
+   choices:["Warm","Hot","Cold","Passive"],
+   answer:0,
+   explain:"A warm site has hardware and connectivity pre-installed but may need data restoration. It balances cost vs recovery time. Hot sites are for zero-downtime critical systems. Cold sites are cheap but take days to activate."},
+  {id:41, domain:"3.0", obj:"3.2", weakFor:"B",
+   q:"An administrator is setting up SNMP and needs to create device IDs within a MIB. What is a MIB?",
+   choices:["A definition file that describes SNMP-managed objects and their properties","A DHCP relay device","A policy enforcement point","An event translation engine"],
+   answer:0,
+   explain:"MIB (Management Information Base) is a hierarchical database defining what information can be queried on a network device. Each object has an OID (Object Identifier). It's not a device — it's a schema."},
+  {id:42, domain:"3.0", obj:"3.2", weakFor:"B",
+   q:"Before implementing any monitoring tools, what should a network administrator establish first?",
+   choices:["Baseline metrics","A SIEM","Regular packet captures","Availability monitoring"],
+   answer:0,
+   explain:"You need to know what 'normal' looks like before you can detect anomalies. Baseline metrics (bandwidth usage, latency, CPU load) establish the reference point for all monitoring."},
+  {id:43, domain:"3.0", obj:"3.2", weakFor:"B",
+   q:"A network security admin needs to monitor the actual contents of data between a secure and regular network segment. Which method works?",
+   choices:["Port mirroring","Flow data","Syslog entries","SNMP traps"],
+   answer:0,
+   explain:"Port mirroring (SPAN) copies all traffic from one port to another for analysis, letting you see full packet contents. Flow data (NetFlow) only shows metadata. Syslog and SNMP show events, not packet payloads."},
+  {id:44, domain:"3.0", obj:"3.2", weakFor:"M",
+   q:"Which device passively analyzes network traffic for attacks without adding latency?",
+   choices:["IDS","IPS","Load balancer","Firewall"],
+   answer:0,
+   explain:"An IDS (Intrusion Detection System) monitors traffic passively — it's out-of-band, so it doesn't sit inline and doesn't add latency. An IPS is inline and can add latency because it actively blocks threats."},
+  {id:45, domain:"3.0", obj:"3.1", weakFor:"B",
+   q:"In a data center using hot/cold aisle containment, which direction should equipment exhaust face?",
+   choices:["Rear (toward the hot aisle)","Front","Sides","Top"],
+   answer:0,
+   explain:"Equipment intakes cool air from the front (cold aisle) and exhausts hot air out the rear (hot aisle). This separation prevents hot air recirculation and maintains cooling efficiency."},
+  {id:46, domain:"3.0", obj:"3.1", weakFor:"G",
+   q:"Which two environmental factors should be considered when installing equipment in a building? (Pick the best pair)",
+   choices:["Fire suppression system and humidity control","UPS location and power load","Floor construction and proximity to MDF","Power load and proximity to MDF"],
+   answer:0,
+   explain:"Fire suppression (to protect equipment) and humidity control (to prevent static damage and condensation) are the two primary environmental concerns for equipment rooms."},
+  {id:47, domain:"3.0", obj:"3.1", weakFor:"G",
+   q:"What two factors most determine the physical size of a server rack?",
+   choices:["Switch depth and server height","KVM size and hard drive size","Hard drive size and cooling fan speed","Outlet amperage and cooling fan speed"],
+   answer:0,
+   explain:"Rack depth is driven by the deepest equipment (usually switches or servers), and rack height (in U) is driven by how many servers you need to stack. These are the primary sizing factors."},
+  {id:48, domain:"3.0", obj:"3.2", weakFor:"G",
+   q:"A network admin wants device monitoring with authentication and encryption. Which protocol meets both requirements?",
+   choices:["SNMPv3","SIEM","Syslog","NetFlow"],
+   answer:0,
+   explain:"SNMPv3 is the only SNMP version that provides both authentication (verifying who's querying) and encryption (protecting the data in transit). SNMPv2c uses community strings in cleartext."},
+  {id:49, domain:"3.0", obj:"3.2", weakFor:"G",
+   q:"Before implementing a SIEM to correlate system events, which protocol should the network manager verify is working correctly?",
+   choices:["NTP","DNS","LDAP","DHCP"],
+   answer:0,
+   explain:"SIEM correlates events by timestamp. If clocks across devices aren't synchronized via NTP, event correlation becomes unreliable and investigation timelines break down."},
+
+  // ── DOMAIN 4.0: NETWORK SECURITY ──
+  {id:50, domain:"4.0", obj:"4.1", weakFor:"B",
+   q:"A network zone that restricts access to only internal corporate employees is called what?",
+   choices:["Trusted zone","Extranet","VPN","Public zone"],
+   answer:0,
+   explain:"A trusted zone (or intranet zone) is accessible only to internal employees. Extranet extends some access to external partners. A DMZ/public zone faces the internet."},
+  {id:51, domain:"4.0", obj:"4.1", weakFor:"B",
+   q:"A hash function provides which security property?",
+   choices:["Integrity","Confidentiality","Non-repudiation","Availability"],
+   answer:0,
+   explain:"Hashing verifies integrity — if the data changes, the hash changes. It does NOT encrypt (confidentiality) or prove who sent it (non-repudiation requires digital signatures, which use hashing + asymmetric keys)."},
+  {id:52, domain:"4.0", obj:"4.1", weakFor:"B",
+   q:"Which XML-based security concept passes sensitive user login information and attributes between identity providers?",
+   choices:["SAML","RADIUS","IAM","MFA"],
+   answer:0,
+   explain:"SAML (Security Assertion Markup Language) is XML-based and enables SSO by passing authentication assertions between an identity provider and service provider. RADIUS uses its own protocol, not XML."},
+  {id:53, domain:"4.0", obj:"4.1", weakFor:"B",
+   q:"Which regulation is most responsible for the security and handling of personal data in Europe?",
+   choices:["GDPR","SCADA","SAML","PCI DSS"],
+   answer:0,
+   explain:"GDPR (General Data Protection Regulation) is the EU's comprehensive data privacy law. SCADA is industrial control systems. PCI DSS is for payment card data. SAML is an auth protocol, not a regulation."},
+  {id:54, domain:"4.0", obj:"4.3", weakFor:"B",
+   q:"A new switch needs to ensure only assigned devices can connect. What should the admin enable?",
+   choices:["Port security","ACLs","Captive portal","Disable unnecessary services"],
+   answer:0,
+   explain:"Port security limits which MAC addresses can use a switch port. If an unknown MAC tries to connect, the port can shutdown or restrict. ACLs filter traffic but don't control physical port access."},
+  {id:55, domain:"4.0", obj:"4.3", weakFor:"B",
+   q:"When adding OT (operational technology) or IoT devices to a network, what should be configured first?",
+   choices:["Network segmentation","Data-at-rest encryption","Time-based authentication","A honeynet"],
+   answer:0,
+   explain:"OT/IoT devices often have weak security and shouldn't be on the same network as production systems. Segmenting them into their own VLAN/subnet limits blast radius if they're compromised."},
+  {id:56, domain:"4.0", obj:"4.3", weakFor:"G",
+   q:"A company receives a cease-and-desist about prohibited torrent activity. Which should they implement?",
+   choices:["Content filtering","Perimeter network","MAC security","Screened subnet"],
+   answer:0,
+   explain:"Content filtering blocks access to specific types of content or protocols (like BitTorrent). A perimeter network/screened subnet protects servers but doesn't filter user behavior."},
+  {id:57, domain:"4.0", obj:"4.3", weakFor:"G",
+   q:"A passive IDS needs to see all traffic on a switch port. Which feature should the admin use?",
+   choices:["Port mirroring","Syslog collection","SNMP trap","API integration"],
+   answer:0,
+   explain:"Port mirroring (SPAN) copies all traffic from monitored ports to the IDS port. The IDS needs to see the actual traffic, not just logs or alerts. SNMP and syslog only provide metadata."},
+  {id:58, domain:"4.0", obj:"4.3", weakFor:"G",
+   q:"A vendor alert identifies a vulnerability in a router's CPU firmware. What should the engineer do?",
+   choices:["Update the firmware","Isolate the system","Replace the system board","Patch the OS"],
+   answer:0,
+   explain:"A CPU firmware vulnerability is fixed by applying a firmware update from the vendor. Isolation is temporary mitigation, not resolution. Replacing hardware is overkill for a software fix."},
+  {id:59, domain:"4.0", obj:"4.4", weakFor:"B",
+   q:"Which allows a user to connect to an isolated device on a stand-alone network?",
+   choices:["Jump box","Clientless VPN","API gateway","Secure Shell"],
+   answer:0,
+   explain:"A jump box (jump server/bastion host) is a hardened system that acts as a gateway to access isolated or segmented networks. SSH alone doesn't bridge isolated network segments."},
+  {id:60, domain:"4.0", obj:"4.4", weakFor:"M",
+   q:"A network appliance has failed to start. Which method provides remote access for recovery?",
+   choices:["Out-of-band management","Jump box","Secure Shell","Crash cart"],
+   answer:0,
+   explain:"Out-of-band management (iLO, iDRAC, serial console) works even when the device's OS has failed. SSH requires the OS to be running. A crash cart is physical/on-site access."},
+  {id:61, domain:"4.0", obj:"4.3", weakFor:"G",
+   q:"A new device is being added to the network. The admin wants to harden it before connecting. What should they do first?",
+   choices:["Change the default admin passwords","Update the network ACLs","Place the device in a screened subnet","Enable content filtering"],
+   answer:0,
+   explain:"Default credentials are the #1 security risk on new devices. Changing them is the first hardening step before the device touches the network. ACLs and placement come after."},
+  {id:62, domain:"4.0", obj:"4.3", weakFor:"G",
+   q:"A company wants to enforce that only company devices can connect to the wireless network. Which is the strongest approach?",
+   choices:["802.1X","MAC filtering","Port security","ACL"],
+   answer:0,
+   explain:"802.1X provides certificate-based or credential-based authentication at the network access level. MAC filtering is easily spoofed. Port security is for wired. ACLs filter traffic, not device identity."},
+
+  // ── DOMAIN 5.0: TROUBLESHOOTING ──
+  {id:63, domain:"5.0", obj:"5.1", weakFor:"M",
+   q:"After identifying the problem level in the OSI model, what is the next troubleshooting step?",
+   choices:["Create a plan of action","Establish a theory","Implement the solution","Verify functionality"],
+   answer:0,
+   explain:"The troubleshooting methodology: Identify → Establish theory → Test theory → Create plan of action → Implement → Verify → Document. After identifying the problem area, you create your action plan."},
+  {id:64, domain:"5.0", obj:"5.1", weakFor:"G",
+   q:"A technician is troubleshooting and needs to confirm a theory. What step comes next in the methodology?",
+   choices:["Duplicate the problem","Identify the symptoms","Gather information","Determine any changes"],
+   answer:0,
+   explain:"To confirm a theory of probable cause, you try to duplicate/reproduce the problem. If you can reliably reproduce it, your theory is likely correct."},
+  {id:65, domain:"5.0", obj:"5.1", weakFor:"G",
+   q:"A technician tested a faulty NIC theory and confirmed it. What's the next step?",
+   choices:["Establish a plan of action","Develop a theory","Implement the solution","Document the findings"],
+   answer:0,
+   explain:"After testing confirms the theory, the next step is establishing a plan of action to resolve it. You don't jump straight to implementation — you plan first."},
+  {id:66, domain:"5.0", obj:"5.5", weakFor:"B",
+   q:"Two internet links share traffic for a web app with poor performance. Which tool shows which link the app uses?",
+   choices:["tracert/traceroute","netstat","nslookup","ping"],
+   answer:0,
+   explain:"Tracert/traceroute shows the exact path packets take, revealing which link (and hops) the web application's traffic traverses. Netstat shows local connections but not the path."},
+  {id:67, domain:"5.0", obj:"5.5", weakFor:"B",
+   q:"An application has issues after a firewall change. The port and protocol are accessible. Which tool inspects application-layer traffic?",
+   choices:["tcpdump","nslookup","ifconfig","traceroute"],
+   answer:0,
+   explain:"tcpdump captures and displays packet contents including application-layer data. It can show exactly what's happening in the traffic that's causing application issues even when the port is open."},
+  {id:68, domain:"5.0", obj:"5.5", weakFor:"G",
+   q:"A Linux web server can be pinged but users can't reach it via browser. The server is online, web process is running, and the switch link is up. What should the admin check first?",
+   choices:["netstat (to verify the web service is listening on the correct port)","tcpdump","traceroute","arp"],
+   answer:0,
+   explain:"If the server is reachable (ping works) but the web service isn't responding, check netstat to verify the web server process is actually listening on port 80/443. The process might be running but bound to the wrong port or interface."},
+  {id:69, domain:"5.0", obj:"5.2", weakFor:"B",
+   q:"A fiber patch cable is connected but the indicator light doesn't turn on. What should the technician try first?",
+   choices:["Reverse the fibers (swap TX/RX)","Verify the fiber size","Reterminate the fibers","Examine the cable for visual faults"],
+   answer:0,
+   explain:"Fiber uses separate strands for transmit and receive. If TX/RX are swapped, no light passes. Reversing the fiber pair is the quickest first check before retermination or replacement."},
+  {id:70, domain:"5.0", obj:"5.2", weakFor:"B",
+   q:"A coaxial modem shows -97dB signal power and users have slow speeds and disconnections. What should be checked?",
+   choices:["Remove any splitters connected to the line","Move devices closer to the modem","Switch devices to wireless","Lower the network speed"],
+   answer:0,
+   explain:"-97dB is extremely weak for coax (should be around -7 to -12dB for downstream). Each splitter adds signal loss (3.5dB per split). Removing unnecessary splitters is the most impactful first step."},
+  {id:71, domain:"5.0", obj:"5.2", weakFor:"G",
+   q:"Cat 8 cables with passthrough plugs have high crosstalk. What should the electrician inspect first?",
+   choices:["Whether the end connections have exposed wires touching","Restore default settings on connected devices","The cable runs for RF interference","Re-terminate the connections"],
+   answer:0,
+   explain:"Passthrough plugs leave wire ends exposed past the connector if not trimmed properly. Exposed wires touching causes crosstalk. This is the most likely culprit and quickest check."},
+  {id:72, domain:"5.0", obj:"5.3", weakFor:"G",
+   q:"A phone system module failed — the console can connect to modules individually but the customer lost their connection. What most likely happened?",
+   choices:["A module failed","A switch failed","Cables to the modules need replacing","Console software needs reinstallation"],
+   answer:0,
+   explain:"If individual modules work when accessed directly but one connection is lost, the most likely cause is that specific module failed. The switch and cables are ruled out by the working individual connections."},
+  {id:73, domain:"5.0", obj:"5.3", weakFor:"G",
+   q:"A VM has IP 169.254.10.10 with mask 255.255.0.0. It can reach local systems but not the internet. What's the root cause?",
+   choices:["The DHCP server is offline (169.254.x.x is APIPA)","The subnet mask is incorrect","The IP is an RFC1918 private address","The DNS server is unreachable"],
+   answer:0,
+   explain:"169.254.x.x is an APIPA address — assigned when a device can't reach a DHCP server. It allows local link communication but no routed internet access. The DHCP server being down is the root cause."},
+  {id:74, domain:"5.0", obj:"5.3", weakFor:"G",
+   q:"An intermittent issue occurs whenever someone uses a fax machine connected to a switch. What should the engineer configure?",
+   choices:["A separate VLAN for the fax machine","Change the MTU","Enable 802.1Q tagging","Run a new Cat 5 line"],
+   answer:0,
+   explain:"Fax machines can cause broadcast storms or electrical noise on shared network segments. Placing the fax on its own VLAN isolates its traffic from other devices, resolving the intermittent issues."},
+  {id:75, domain:"5.0", obj:"5.3", weakFor:"G",
+   q:"New phones have HD video but the network may not handle the traffic. What should the engineer configure?",
+   choices:["A VLAN with 100Mbps speed limits","An IP helper for VoIP traffic","A smaller subnet mask","Full duplex on all ports"],
+   answer:0,
+   explain:"Creating a dedicated VLAN with bandwidth limits for voice/video traffic prevents it from overwhelming the network. Speed limits ensure the video traffic stays within manageable bounds."},
+  {id:76, domain:"5.0", obj:"5.3", weakFor:"G",
+   q:"VoIP quality degrades when users upload large files. When no other traffic exists, calls are fine. What's the fix?",
+   choices:["Configure QoS on the router","Enable MAC filtering","Reduce the VLAN database","Implement ACLs"],
+   answer:0,
+   explain:"QoS (Quality of Service) prioritizes voice traffic over data traffic like file uploads. This ensures VoIP packets get preferential treatment during congestion, maintaining call quality."},
+  {id:77, domain:"5.0", obj:"5.3", weakFor:"G",
+   q:"A DHCP server was just installed but some afternoon users can't get IPs. What's the most likely issue?",
+   choices:["Not enough IP addresses in the DHCP scope","Incorrect default gateway configured","Not enough routes provisioned","Not enough MAC addresses provisioned"],
+   answer:0,
+   explain:"If early users get IPs fine but later users don't, the DHCP pool is exhausted. The scope needs more addresses or shorter lease times to recycle IPs faster."},
+  {id:78, domain:"5.0", obj:"5.2", weakFor:"G",
+   q:"2.4GHz industrial interference is causing issues. Which two solutions would help? (Best answer)",
+   choices:["5GHz frequency band and non-overlapping channels","Mesh network and omnidirectional antenna","Ad hoc network and captive portal","Omnidirectional antenna and ad hoc network"],
+   answer:0,
+   explain:"Moving to 5GHz avoids the 2.4GHz interference entirely. Using non-overlapping channels (1, 6, 11 for 2.4GHz; many options for 5GHz) prevents additional self-interference between APs."},
+];
+
+// ── Gap data per student ──
+const GAPS = {
+  michael: {
+    name: "Michael",
+    quizScores: {PQ1: "21/30", PQ2: "16/31", PQ3: "15/25", PQ5: "18/31"},
+    overall: "70/117 (60%)",
+    weakDomains: {"1.0":17,"2.0":4,"3.0":12,"4.0":8,"5.0":6},
+    totalMisses: 47
+  },
+  gabe: {
+    name: "Gabe",
+    quizScores: {PQ1: "29/30*", PQ2: "15/31", PQ3: "10/25", PQ4: "7/30", PQ5: "11.5/31"},
+    overall: "72.5/148 (49%)",
+    weakDomains: {"1.0":22,"2.0":14,"3.0":13,"4.0":12,"5.0":13},
+    totalMisses: 74
+  }
+};
+
+// ══════════════════════════════════════════════════════════════
+// APP STATE
+// ══════════════════════════════════════════════════════════════
+let state = {
+  screen: 'login',
+  user: null,
+  mode: 'weak', // 'weak', 'all', domain-specific
+  domainFilter: null,
+  currentQ: 0,
+  queue: [],
+  answered: false,
+  sessionCorrect: 0,
+  sessionTotal: 0,
+  sessionDomainHits: {},
+  sessionDomainTotal: {},
+  // persistent per-student scores (in-memory)
+  scores: {
+    michael: {"1.0":{c:0,t:0},"2.0":{c:0,t:0},"3.0":{c:0,t:0},"4.0":{c:0,t:0},"5.0":{c:0,t:0}},
+    gabe:    {"1.0":{c:0,t:0},"2.0":{c:0,t:0},"3.0":{c:0,t:0},"4.0":{c:0,t:0},"5.0":{c:0,t:0}}
+  }
+};
+
+// ── Helpers ──
+function shuffle(arr) { for(let i=arr.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
+
+function getQuestionsForUser(userId) {
+  const tag = userId === 'michael' ? 'M' : 'G';
+  return QUESTIONS.filter(q => q.weakFor === 'B' || q.weakFor === tag);
+}
+
+function buildQueue() {
+  let pool = getQuestionsForUser(state.user);
+  if (state.mode === 'weak') {
+    const gaps = GAPS[state.user].weakDomains;
+    const sorted = Object.entries(gaps).sort((a,b) => b[1]-a[1]);
+    const topDomains = sorted.slice(0,3).map(d => d[0]);
+    pool = pool.filter(q => topDomains.includes(q.domain));
+  } else if (state.mode !== 'all' && state.mode.match(/^\d/)) {
+    pool = pool.filter(q => q.domain === state.mode);
+  }
+  return shuffle([...pool]).slice(0, 15);
+}
+
+function pct(c,t) { return t === 0 ? 0 : Math.round((c/t)*100); }
+function barColor(p) { return p >= 80 ? 'var(--green)' : p >= 50 ? 'var(--yellow)' : 'var(--red)'; }
+
+// ══════════════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════════════
+function render() {
+  const app = document.getElementById('app');
+  if (state.screen === 'login') return renderLogin(app);
+  if (state.screen === 'dash') return renderDash(app);
+  if (state.screen === 'quiz') return renderQuiz(app);
+  if (state.screen === 'summary') return renderSummary(app);
+}
+
+function renderLogin(app) {
+  app.innerHTML = `
+    <div class="login-screen">
+      <h1>GRID BUILD STUDY LAB</h1>
+      <div class="subtitle">CompTIA Network+ N10-009 — Gap Drill</div>
+      <div class="profile-btns">
+        <div class="profile-btn" onclick="selectUser('michael')">
+          <div class="name">Michael</div>
+          <div class="score">Overall: ${GAPS.michael.overall}</div>
+          <div class="score">${GAPS.michael.totalMisses} gaps mapped</div>
+        </div>
+        <div class="profile-btn" onclick="selectUser('gabe')">
+          <div class="name">Gabe</div>
+          <div class="score">Overall: ${GAPS.gabe.overall}</div>
+          <div class="score">${GAPS.gabe.totalMisses} gaps mapped</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderDash(app) {
+  const u = state.user;
+  const gaps = GAPS[u].weakDomains;
+  const sc = state.scores[u];
+
+  let domainCards = '';
+  for (const [d, info] of Object.entries(DOMAINS)) {
+    const s = sc[d];
+    const p = pct(s.c, s.t);
+    const misses = gaps[d] || 0;
+    const isActive = state.domainFilter === d;
+    domainCards += `
+      <div class="domain-card ${isActive?'active':''}" onclick="toggleDomain('${d}')">
+        <div class="domain-num">${d}</div>
+        <div class="domain-name">${info.name}</div>
+        <div class="domain-bar"><div class="domain-bar-fill" style="width:${p}%;background:${barColor(p)}"></div></div>
+        <div class="domain-stats">${s.c}/${s.t} drilled · ${misses} gaps from quizzes</div>
+      </div>`;
+  }
+
+  app.innerHTML = `
+    <div class="header">
+      <div class="header-left">
+        <h2>N10-009 GAP DRILL</h2>
+        <span class="user-badge">${GAPS[u].name}</span>
+      </div>
+      <div class="header-btns">
+        <button class="btn-sm" onclick="switchUser()">Switch User</button>
+      </div>
+    </div>
+    <div class="dashboard">
+      <h3>Domain Performance</h3>
+      <div class="domain-grid">${domainCards}</div>
+    </div>
+    <div class="mode-bar">
+      <button class="mode-btn ${state.mode==='weak'?'active':''}" onclick="setMode('weak')">DRILL WEAK AREAS</button>
+      <button class="mode-btn ${state.mode==='all'?'active':''}" onclick="setMode('all')">ALL DOMAINS</button>
+      ${Object.entries(DOMAINS).map(([d,info]) =>
+        `<button class="mode-btn ${state.mode===d?'active':''}" onclick="setMode('${d}')">${d.replace('.0','')}: ${info.name.split(' ')[0]}</button>`
+      ).join('')}
+    </div>
+    <div style="text-align:center;margin-top:1rem;">
+      <button class="next-btn visible" onclick="startQuiz()" style="display:inline-block;">START DRILL (15 QUESTIONS)</button>
+    </div>`;
+}
+
+function renderQuiz(app) {
+  const q = state.queue[state.currentQ];
+  if (!q) return;
+  const letters = ['A','B','C','D','E'];
+
+  let choicesHtml = q.choices.map((c,i) => {
+    let cls = 'choice-btn';
+    if (state.answered) {
+      cls += ' disabled';
+      if (i === q.answer) cls += ' correct show-correct';
+      else if (i === state.selectedChoice && i !== q.answer) cls += ' incorrect';
+    } else if (i === state.selectedChoice) {
+      cls += ' selected';
+    }
+    return `<div class="${cls}" onclick="selectChoice(${i})"><span class="letter">${letters[i]}</span>${c}</div>`;
+  }).join('');
+
+  let feedbackHtml = '';
+  if (state.answered) {
+    const isCorrect = state.selectedChoice === q.answer;
+    feedbackHtml = `
+      <div class="feedback-box visible">
+        <div class="fb-status ${isCorrect?'correct':'incorrect'}">${isCorrect?'CORRECT':'INCORRECT'}</div>
+        <div class="fb-explain">${q.explain}</div>
+        <div style="margin-top:0.5rem;font-family:var(--mono);font-size:0.65rem;color:var(--text-dim);">
+          Objective: ${q.obj} · Domain: ${q.domain} ${DOMAINS[q.domain].name}
+        </div>
+      </div>`;
+  }
+
+  app.innerHTML = `
+    <div class="header">
+      <div class="header-left">
+        <h2>N10-009 GAP DRILL</h2>
+        <span class="user-badge">${GAPS[state.user].name}</span>
+      </div>
+      <div class="header-btns">
+        <button class="btn-sm" onclick="endSession()">End Session</button>
+      </div>
+    </div>
+    <div class="quiz-area visible">
+      <div class="q-counter">QUESTION ${state.currentQ+1} / ${state.queue.length} · Session: ${state.sessionCorrect}/${state.sessionTotal}</div>
+      <div class="q-objective">Obj ${q.obj} — ${DOMAINS[q.domain].name} (${DOMAINS[q.domain].weight}%)</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-choices">${choicesHtml}</div>
+      ${feedbackHtml}
+      ${state.answered ? `<button class="next-btn visible" onclick="nextQuestion()">
+        ${state.currentQ < state.queue.length - 1 ? 'NEXT QUESTION →' : 'VIEW RESULTS'}
+      </button>` : ''}
+      ${!state.answered && state.selectedChoice !== undefined ? `<button class="next-btn visible" onclick="submitAnswer()">SUBMIT</button>` : ''}
+    </div>`;
+}
+
+function renderSummary(app) {
+  const p = pct(state.sessionCorrect, state.sessionTotal);
+
+  let domainRows = '';
+  for (const [d, info] of Object.entries(DOMAINS)) {
+    const c = state.sessionDomainHits[d] || 0;
+    const t = state.sessionDomainTotal[d] || 0;
+    if (t === 0) continue;
+    const dp = pct(c,t);
+    domainRows += `
+      <div class="summary-domain-row">
+        <div class="sd-name">${d} ${info.name}</div>
+        <div class="sd-score" style="color:${barColor(dp)}">${c}/${t} (${dp}%)</div>
+      </div>`;
+  }
+
+  app.innerHTML = `
+    <div class="header">
+      <div class="header-left">
+        <h2>SESSION COMPLETE</h2>
+        <span class="user-badge">${GAPS[state.user].name}</span>
+      </div>
+    </div>
+    <div class="summary visible">
+      <h3>Results</h3>
+      <div class="summary-stats">
+        <div class="stat-card">
+          <div class="stat-val" style="color:${barColor(p)}">${p}%</div>
+          <div class="stat-label">Score</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" style="color:var(--green)">${state.sessionCorrect}</div>
+          <div class="stat-label">Correct</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" style="color:var(--red)">${state.sessionTotal - state.sessionCorrect}</div>
+          <div class="stat-label">Missed</div>
+        </div>
+      </div>
+      <h3 style="font-family:var(--mono);font-size:0.8rem;color:var(--text-dim);margin-bottom:0.75rem;">BY DOMAIN</h3>
+      <div class="summary-domains">${domainRows}</div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+        <button class="restart-btn" onclick="goToDash()">BACK TO DASHBOARD</button>
+        <button class="next-btn visible" onclick="startQuiz()" style="display:inline-block;">DRILL AGAIN</button>
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// ACTIONS
+// ══════════════════════════════════════════════════════════════
+function selectUser(id) {
+  state.user = id;
+  state.screen = 'dash';
+  state.mode = 'weak';
+  state.domainFilter = null;
+  render();
+}
+
+function switchUser() {
+  state.screen = 'login';
+  state.user = null;
+  render();
+}
+
+function toggleDomain(d) {
+  if (state.domainFilter === d) {
+    state.domainFilter = null;
+    state.mode = 'weak';
+  } else {
+    state.domainFilter = d;
+    state.mode = d;
+  }
+  render();
+}
+
+function setMode(m) {
+  state.mode = m;
+  state.domainFilter = m.match(/^\d/) ? m : null;
+  render();
+}
+
+function startQuiz() {
+  state.queue = buildQueue();
+  state.currentQ = 0;
+  state.answered = false;
+  state.selectedChoice = undefined;
+  state.sessionCorrect = 0;
+  state.sessionTotal = 0;
+  state.sessionDomainHits = {};
+  state.sessionDomainTotal = {};
+  state.screen = 'quiz';
+  render();
+}
+
+function selectChoice(i) {
+  if (state.answered) return;
+  state.selectedChoice = i;
+  render();
+}
+
+function submitAnswer() {
+  if (state.selectedChoice === undefined || state.answered) return;
+  state.answered = true;
+  const q = state.queue[state.currentQ];
+  const correct = state.selectedChoice === q.answer;
+  state.sessionTotal++;
+  if (correct) state.sessionCorrect++;
+
+  // track per-domain
+  state.sessionDomainTotal[q.domain] = (state.sessionDomainTotal[q.domain]||0) + 1;
+  if (correct) state.sessionDomainHits[q.domain] = (state.sessionDomainHits[q.domain]||0) + 1;
+
+  // update persistent scores
+  const sc = state.scores[state.user][q.domain];
+  sc.t++;
+  if (correct) sc.c++;
+
+  render();
+}
+
+function nextQuestion() {
+  if (state.currentQ >= state.queue.length - 1) {
+    state.screen = 'summary';
+    render();
+    return;
+  }
+  state.currentQ++;
+  state.answered = false;
+  state.selectedChoice = undefined;
+  render();
+}
+
+function endSession() {
+  if (state.sessionTotal > 0) {
+    state.screen = 'summary';
+  } else {
+    state.screen = 'dash';
+  }
+  render();
+}
+
+function goToDash() {
+  state.screen = 'dash';
+  render();
+}
+
+// Init
+render();
+</script>
+</body>
+</html>
